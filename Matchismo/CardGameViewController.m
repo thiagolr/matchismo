@@ -7,13 +7,21 @@
 //
 
 #import "CardGameViewController.h"
+#import "PlayingCardDeck.h"
+#import "PlayingCard.h"
 
 @interface CardGameViewController ()
 @property (weak, nonatomic) IBOutlet UILabel *flipsLabel;
 @property (nonatomic) int flipCount;
+@property (nonatomic) Deck *deck;
 @end
 
 @implementation CardGameViewController
+
+- (Deck *)deck {
+    if (!_deck) _deck = [[PlayingCardDeck alloc] init];
+    return _deck;
+}
 
 - (void) setFlipCount:(int)flipCount {
     _flipCount = flipCount;
@@ -23,15 +31,26 @@
 
 - (IBAction)touchCardButton:(UIButton *)sender {
     if ([sender.currentTitle length]) {
-        UIImage *cardImage = [UIImage imageNamed:@"cardback"];
-        [sender setBackgroundImage:cardImage forState:UIControlStateNormal];
-        [sender setTitle:@"" forState:UIControlStateNormal];
+        if (self.flipCount < [PlayingCard maxRank]*[[PlayingCard validSuits] count]*2 - 1) {
+            UIImage *cardImage = [UIImage imageNamed:@"cardback"];
+            [sender setBackgroundImage:cardImage forState:UIControlStateNormal];
+            [sender setTitle:@"" forState:UIControlStateNormal];
+            self.flipCount++;
+        }
+        else {
+            [sender setBackgroundImage:nil forState:UIControlStateNormal];
+            [sender setTitle:@"" forState:UIControlStateNormal];
+            self.flipCount++;
+        }
     } else {
-        UIImage *cardImage = [UIImage imageNamed:@"cardfront"];
-        [sender setBackgroundImage:cardImage forState:UIControlStateNormal];
-        [sender setTitle:@"A C" forState:UIControlStateNormal];
+        PlayingCard *card = (PlayingCard *)[self.deck drawRandomCard];
+        if (card) {
+            UIImage *cardImage = [UIImage imageNamed:@"cardfront"];
+            [sender setBackgroundImage:cardImage forState:UIControlStateNormal];
+            [sender setTitle:[NSString stringWithFormat:@"%@%@", [PlayingCard rankStrings][card.rank], card.suit] forState:UIControlStateNormal];
+            self.flipCount++;
+        }
     }
-    self.flipCount++;
 }
 
 
